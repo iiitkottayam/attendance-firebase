@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-123597315-3"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'UA-123597315-3');
+        </script>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="theme-color" content="#343A40">
+		<title>Attendance App</title>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.5.2/animate.min.css">
+
+		<link rel="stylesheet" href="style.css?v=1.0.1">
+	</head>
+	<body>
+		<nav class="navbar navbar-expand-sm bg-dark navbar-dark animated fadeInDown">
+		  <a class="navbar-brand" href="#">Attendence app</a>
+		</nav>
+		<br>
+		<div class="container-fluid">
+			<div class="row justify-content-md-center">
+				<div class="col col-sm-12 col-md-4">
+					<div class="whitebox animated fadeInUp">
+						<h1 class="display-4 text-center">
+							Login
+						</h1>
+						<form onsubmit="login();return false;">
+						  <div class="form-group">
+						    <label for="email">Email address</label>
+						    <input type="email" class="form-control" name="email" id="email" aria-describedby="emailHelp" placeholder="Enter email">
+						    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
+						  </div>
+						  <div class="form-group">
+						    <label for="password">Password</label>
+						    <input type="password" class="form-control" name="password" id="password" placeholder="Password">
+						  </div>
+						  <div class="form-check">
+                            <input class="form-check-input" type="checkbox" value="" id="persist">
+                            <label class="form-check-label" for="persist">
+                                Remember Me
+                            </label>
+                           </div>
+						  <button id="btnLogIn" type="submit" class="btn btn-success">Login</button>
+						</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</body>
+	<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-app.js"></script>
+	<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-auth.js"></script>
+	<script>
+	  var config = {
+	    apiKey: "AIzaSyB6SkS7WTacu_BlwOLtfTwTUYSuKlvV1pI",
+	  };	  
+	  firebase.initializeApp(config);
+	  function login(){
+	    var persist = document.getElementById('persist').checked;
+	  	var loginButton = document.getElementById('btnLogIn');
+	  	var emailTxt = document.getElementById('email');
+	  	var passwordTxt = document.getElementById('password');
+	  	loginButton.disabled = true;
+	  	loginButton.innerHTML='<i class="fa fa-spinner fa-spin" style="font-size:20px"></i>'+' Verifying...';
+	  	var email = emailTxt.value;
+	  	var password = passwordTxt.value;
+	  	
+	  	if(persist==true){
+	  	   firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+		  .then(function() {
+    		    return firebase.auth().signInWithEmailAndPassword(email, password);
+    		  })
+    		  .catch(function(error) {
+    		  	loginButton.innerHTML="Try logging again.."
+    		  	loginButton.disabled = false;
+    		    emailTxt.className+=' invalid';
+    		    passwordTxt.className+=' invalid';
+    		  });
+	    }else{
+	        firebase.auth().setPersistence(firebase.auth.Auth.Persistence.SESSION)
+		  .then(function() {
+    		    return firebase.auth().signInWithEmailAndPassword(email, password);
+    		  })
+    		  .catch(function(error) {
+    		  	loginButton.innerHTML="Try logging again.."
+    		  	loginButton.disabled = false;
+    		    emailTxt.className+=' invalid';
+    		    passwordTxt.className+=' invalid';
+		  });
+	    }
+	  }
+	  	
+	  	
+	  firebase.auth().onAuthStateChanged(function(user){
+	  	if(user){
+	  		window.location = 'landing.html';
+	  	}
+	  });
+	</script>
+</html>

@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-123597315-3"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'UA-123597315-3');
+        </script>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="theme-color" content="#343A40">
+		<title>Landing | Attendance App</title>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.5.2/animate.min.css">
+
+		<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-app.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-auth.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-firestore.js"></script>
+		<link rel="stylesheet" href="style.css?v=1.0.0">
+		<script src="./helper.js?v=1.0.1"></script>
+	</head>
+	<body>
+		<div style="width:100%">
+			<nav class="navbar bg-dark navbar-dark fixed-top">
+			  <div class="container-fluid">
+			    <div class="navbar-header animated fadeInRight">
+			    	<a href="javascript:history.back()" class="navbar-brand text-white" href="#"><i class="fa fa-angle-left" style="color: white; font-size: 22px;"></i>&nbsp; Attendance App</a>
+			    </div>
+			    <ul class="nav navbar-nav navbar-right">
+			      <li>
+			      		<a href="#" onclick="logout()" class="btn btn-danger animated fadeIn" role="button">Logout</a>	
+			      </li>
+			    </ul>
+			  </div>
+			</nav>
+			<div class="container-fluid">
+				<div class="row">
+					<br>
+				</div>
+			</div>
+			<div class="container-fluid" style="width:95%;margin: 80px auto auto auto">
+				<div class="row">
+					<div class="col-12 col-md-3" id="profile">
+						<!--  -->
+						<div class="whitebox animated fadeInDown">
+		   					<div class="card">
+							  <ul class="list-group list-group-flush">
+							  	<li class="list-group-item fullTrans">
+							  		<b>Welcome to Attendance App</b>
+							  	</li>
+							  	<li class="list-group-item fullTrans" id="username">
+							  	</li>
+							    <li class="list-group-item fullTrans" id="useremail">
+							    </li>
+							  </ul>
+							</div>
+						</div>
+						<!--  -->
+					</div>
+					<div class="col-12 col-md-9 whitebox animated fadeInUp">	
+						<div class="row">
+							<div class="col" id="feedback"></div>
+						</div>
+						<div class="row">
+							<div class="col" id="studPer" style="padding:0 45px;display:flex"></div>
+						</div>
+						<div class="row" style="margin:0" id="courses" >
+							<div class="loader"></div>												
+						</div>
+					</div>
+				</div>			
+			</div>
+		</div>
+		<div class="modal fade" id="newSessionWarning">
+		  <div class="modal-dialog">
+		    <div class="modal-content">
+		      <div class="modal-header">
+		        <h4 class="modal-title text-danger">Do you want to create new session?</h4>
+		        <button type="button" class="close" data-dismiss="modal">&times;</button>
+		      </div>
+		      <div class="modal-body">
+		        Proceding here will make permanent changes to database.
+		      </div>
+		      <div class="modal-footer">
+		        <button id='recordAttendanceSureBtn' type="button" class="btn btn-success" data-dismiss="modal">Yes</button>
+		        <button type="button" class="btn btn-danger" data-dismiss="modal">No</button>
+		      </div>
+		    </div>
+		  </div>
+		</div>
+	</body>
+	<script type="text/javascript">
+		var config = {
+		    apiKey: "AIzaSyB6SkS7WTacu_BlwOLtfTwTUYSuKlvV1pI",
+		    authDomain: "institute-attendance-app.firebaseapp.com",
+		    projectId: "institute-attendance-app",
+		  };
+		firebase.initializeApp(config);		  
+		firebase.auth().onAuthStateChanged(function(){			
+			var user = firebase.auth().currentUser;
+	  		if(!user){
+	  			window.location = 'index.html';
+	  		}else{
+	  			displayProfile();
+	  			var db = firebase.firestore();
+				var settings = {timestampsInSnapshots: true};
+				db.settings(settings);		
+				var userInfo = db.collection("users").doc(user.uid);
+				  userInfo.get().then(function(doc){
+				  if(doc.exists){
+					var id = doc.data().index;
+					var typeId = doc.data().type;
+					var type = (typeId == 3)?'Student':((typeId == 2)?'Faculty':'Invalid');					
+					if (typeId == 3 || typeId == 2){
+						var collectionName = (typeId==2)?'faculties':'students';
+						var userCourses = db.collection(collectionName).doc(id);
+							userCourses.get().then(function(doc){
+								if(doc.exists){
+									displayCourses(doc.data().courses,typeId);
+								}else{
+									console.log('No data found for user while fetching courses');
+								}
+							}).catch(function(error){
+								console.log('Error Reading document while fetching courses : ',error);
+							})
+						}else{
+							console.log('Error you do not belong to either faculty class or student class');
+						}
+		  			}else{
+		  				console.log('No data found for user');
+		  				console.log('No such data');
+		  			}
+		  		}).catch(function(error){
+		  			console.log('Error Reading document :', error);
+		  		});
+	  		}
+		})		
+	</script>
+	<script>
+		function linkViewAttendance(ele){
+		  	var courseId = ele.getAttribute('courseid');
+		  	window.location = "viewAttendance.html?courseid="+courseId;
+		}
+
+		function linkPercentageAttendance(ele){
+		  	var courseId = ele.getAttribute('courseid');
+		  	window.location = "percentageAttendance.html?courseid="+courseId;
+		}
+
+		function linkRecordAttendance(ele){
+		  	var courseId = ele.getAttribute('courseid');
+		  	$('#newSessionWarning').modal('show');
+		  	document.getElementById('recordAttendanceSureBtn').setAttribute('onclick','window.location = "recordAttendance.html?courseid='+courseId+'";');
+		}
+
+		function displayCourses(courses,type){
+		  	var ele = document.getElementById('courses');
+		  	var inner = '';
+		  	for(var i=0;i<courses.length;i++){
+		  		inner+='<div class="card col-12 col-sm-6 animated fadeIn" style="margin-top:10px;border:none"><div class="card-body"><h5 class="card-title">'+courses[i]+'</h5><hr><p class="card-text">Some quick example text to build on the card title and make up the bulk of the card content.</p>';
+		  		if(type==2){
+		  			inner+='<button role="button" href="#" class="btn btn-primary text-white" onclick="linkRecordAttendance(this)" courseid="'+courses[i]+'">New Session</button>';
+		  			inner+='<button role="button" href="#" class="btn btn-primary text-white" onclick="linkPercentageAttendance(this)" courseid="'+courses[i]+'">% Details</button>';
+		  			inner+='<button role="button" href="#" onclick="linkViewAttendance(this)" courseid="'+courses[i]+'" class="btn btn-primary text-white">View</button></div></div>';
+		  		}
+		  		if(type==3){
+		  			inner+='<button role="button" href="#" class="btn btn-primary text-white" onclick="displayPercentage(\''+courses[i]+'\')">% Details</button>';
+		  			inner+='<button role="button" href="#" onclick="linkViewAttendance(this)" courseid="'+courses[i]+'" class="btn btn-primary text-white">View</button></div></div>';
+				}				
+		  	}
+		  	ele.innerHTML = inner;
+		}		
+	</script>
+</html>
