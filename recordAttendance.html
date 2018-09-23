@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <script async src="https://www.googletagmanager.com/gtag/js?id=UA-123597315-3"></script>
+        <script>
+          window.dataLayer = window.dataLayer || [];
+          function gtag(){dataLayer.push(arguments);}
+          gtag('js', new Date());
+          gtag('config', 'UA-123597315-3');
+        </script>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		<meta name="theme-color" content="#343A40">
+		<title>Mark Attendance | Attendance App</title>
+		<link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/css/bootstrap.min.css" integrity="sha384-Smlep5jCw/wG7hdkwQ/Z5nLIefveQRIY9nfy6xoR1uRYBtpZgI6339F5dgvm/e9B" crossorigin="anonymous">
+		<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.3/umd/popper.min.js" integrity="sha384-ZMP7rVo3mIykV+2+9J3UJ46jBk0WLaUAdn689aCwoqbBJiSnjAK/l8WvCWPIPm49" crossorigin="anonymous"></script>
+		<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.1.2/js/bootstrap.min.js" integrity="sha384-o+RDsa0aLu++PJvFqy8fFScvbHFLtbvScb8AjopnFD+iEQ7wo/CG0xlczd+2O/em" crossorigin="anonymous"></script>
+		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.1.1/css/all.css" integrity="sha384-O8whS3fhG2OnA5Kas0Y9l3cfpmYjapjI0E4theH4iuMD+pLhbf6JI0jIMfYcK3yZ" crossorigin="anonymous">
+
+		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.5.2/animate.min.css">
+
+		<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-app.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-auth.js"></script>
+		<script src="https://www.gstatic.com/firebasejs/5.2.0/firebase-firestore.js"></script>
+		<script src="./helper.js?ver=1.0.0"></script>
+		<link rel="stylesheet" href="style.css">
+	</head>
+	<body>
+		<div style="width:100%">
+			<nav class="navbar bg-dark navbar-dark fixed-top">
+			  <div class="container-fluid">
+			    <div class="navbar-header animated fadeInRight">
+			    	<a href="javascript:history.back()" class="navbar-brand text-white" href="#"><i class="fa fa-angle-left" style="color: white; font-size: 22px;"></i>&nbsp; Attendance App</a>
+			    </div>
+			    <ul class="nav navbar-nav navbar-right">
+			      <li>
+			      		<a href="#" onclick="logout()" class="btn btn-danger" role="button">Logout</a>	
+			      </li>
+			    </ul>
+			  </div>
+			</nav>
+			<div class="container-fluid">
+				<div class="row">
+					<br>
+				</div>
+			</div>
+			<div class="container-fluid" style="width:95%;margin: 80px auto auto auto">
+				<div class="row">
+					<div class="col-12 col-md-3" id="profile">
+	   				   <div class="whitebox animated fadeInDown">
+		   					<div class="card">
+							  <ul class="list-group list-group-flush">
+							  	<li class="list-group-item fullTrans">
+							  		<b>Welcome to Attendance App</b>
+							  	</li>
+							  	<li class="list-group-item fullTrans" id="username">
+							  	</li>
+							    <li class="list-group-item fullTrans" id="useremail">
+							    </li>
+							  </ul>
+							</div>
+						</div>
+					</div>
+					<div class="col-12 col-md-9 whitebox animated fadeInUp">	
+						<div class="row">
+							<div class="col" id="feedback"></div>
+						</div>
+						<div class="row" id="sessionDetail">
+							<div class="col"><h4 class="lead">Mark Attendance : </h4></div>
+							<div class="col"><h4 class="lead" id='todayDate'></h4></div>
+							<div class="col"><h4 class="lead" id='currentCourse'></h4></div>
+							<div class="col"><h4 class="lead" id='currentSession'></h4></div>
+						</div>
+						<div class="row table-responsive" style="margin:0" id="courses">
+							<table id='attendanceTable' class="table table-striped animated fadeIn">
+							    <thead>
+									<tr>
+							        <th>Roll No</th>
+							        <th>Name</th>
+							        <th>(<span style="color:#db4c4c">Absent</span>/<span style="color:#41ad6e">Present</span>)</th>
+							      </tr>
+							    </thead>
+					    		<tbody id="attendanceTableBody">
+						    	</tbody>
+							</table>											
+						</div>
+					</div>
+				</div>			
+			</div>
+		</div>
+	</body>
+	<script type="text/javascript">	
+		var config = {
+			apiKey: "AIzaSyB6SkS7WTacu_BlwOLtfTwTUYSuKlvV1pI",
+			authDomain: "institute-attendance-app.firebaseapp.com",
+			projectId: "institute-attendance-app",
+		};
+		firebase.initializeApp(config);	
+		firebase.auth().onAuthStateChanged(function(){			
+			var user = firebase.auth().currentUser;
+	  		if(!user){
+	  			window.location = 'index.html';
+	  		}else{
+	  			displayProfile();
+	  			var db = firebase.firestore();
+				var settings = {timestampsInSnapshots: true};
+				db.settings(settings);	
+				var db = firebase.firestore();
+				var user = firebase.auth().currentUser;
+				var userid = user.uid;
+				var facultyIndex;
+				db.collection('users').doc(userid).get().then(
+					function(doc){
+					facultyIndex = doc.data().index;
+				}).then(function(){
+					addNewSessionToday(facultyIndex);
+				}).catch(e=>{
+					console.log(e);
+				})
+			}
+		});
+	</script>
+</html>
