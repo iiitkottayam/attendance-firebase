@@ -8,6 +8,7 @@
           gtag('js', new Date());
           gtag('config', 'UA-123597315-3');
         </script>
+        <meta charset="utf-8">
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<meta name="theme-color" content="#343A40">
 		<title>Attendance App</title>
@@ -20,6 +21,28 @@
 		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/animate.css@3.5.2/animate.min.css">
 
 		<link rel="stylesheet" href="style.css?v=1.0.1">
+
+		<style type="text/css">
+			.gbtn
+			{
+				color:white;
+				background-color: #dd4b39;
+				border-radius: 10px;
+				padding: 8px;
+				border-width: 0px;
+				cursor: pointer;
+			}
+
+			.gbtn:hover
+			{
+				background-color: #cc3724;
+			}
+
+			.gbtn:focus
+			{
+				outline: none;
+			}
+		</style>
 	</head>
 	<body>
 		<nav class="navbar navbar-expand-sm bg-dark navbar-dark animated fadeInDown">
@@ -49,8 +72,12 @@
                                 Remember Me
                             </label>
                            </div>
-						  <button id="btnLogIn" type="submit" class="btn btn-success">Login</button>
+						  <button id="btnLogIn" type="submit" class="btn btn-success">Login with Email</button>
+						  <small id="emailHelp" class="form-text text-muted"> &nbsp;(for professors)</small>
 						</form>
+						<hr>
+						<button id="gbtn" onclick="loginWithGoogle()" class="gbtn">Log in with <i class="fab fa-google" style="color:white"></i></button>
+						<small id="emailHelp" class="form-text text-muted"> &nbsp;(for students)</small>
 					</div>
 				</div>
 			</div>
@@ -61,8 +88,10 @@
 	<script>
 	  var config = {
 	    apiKey: "AIzaSyB6SkS7WTacu_BlwOLtfTwTUYSuKlvV1pI",
+	    authDomain: "institute-attendance-app.firebaseapp.com"
 	  };	  
 	  firebase.initializeApp(config);
+
 	  function login(){
 	    var persist = document.getElementById('persist').checked;
 	  	var loginButton = document.getElementById('btnLogIn');
@@ -97,12 +126,75 @@
 		  });
 	    }
 	  }
+
+	  function loginWithGoogle()
+	  {
+	  	let loginButton = document.getElementById("gbtn");
+	  	loginButton.innerHTML = '<i class="fa fa-spinner fa-spin" style="font-size:20px"></i>'+' Signing in...';
+
+	  	var gAuthProvider = new firebase.auth.GoogleAuthProvider;
+
+	  	firebase.auth().signInWithRedirect(gAuthProvider);
+	  }
+
+	  let loginButton = document.getElementById("gbtn");
+	  loginButton.innerHTML = '<i class="fa fa-spinner fa-spin" style="font-size:20px"></i>'+' Checking if logged in...';
+
+	  firebase.auth().getRedirectResult().then(function(data) {
+			console.log('WOOOOHOOOOO!!!!!!');
+	  		loginButton.innerHTML = '<i class="fa fa-spinner fa-spin" style="font-size:20px"></i>'+' Verifying user...';
+	  		let checker = 0;
+			firebase.auth().onAuthStateChanged(function(user){
+				if(user)
+				{
+					checker++;
+					console.log('checker is '+ checker);
+					console.log('user signed in!');
+					console.log(user.email);
+
+					firebase.auth().currentUser.getIdToken(/* forceRefresh */ true).then(function(idToken){
+
+					}).catch(function(error) {console.log(error);});
+
+					if(user.email.endsWith("@iiitkottayam.ac.in"))
+					{
+						console.log('allowed!');
+						window.location = 'landing.html';
+					}
+					else
+					{
+						// alert('Access denied to user!');
+						console.log('only college email allowed!');
+						firebase.auth().signOut().then(function() {
+							console.log('logged out!');
+						})
+						.catch(function(error){
+							notify('Something went wrong','error');
+						});
+						loginButton.innerHTML = '<i class="fa fa-spinner fa-pulse" style="color:white"></i> Access denied, login only with college email id!';
+						setTimeout(()=>{loginButton.innerHTML = 'Log in with <i class="fab fa-google" style="color:white">';},5000);
+					}
+				}
+				else
+				{
+					checker++;
+					console.log('checker is '+ checker);
+					if(checker == 1)
+						loginButton.innerHTML = 'Log in with <i class="fab fa-google" style="color:white">';
+					console.log('user NOT signed in!');
+				}
+			});
+
+		}).catch(function(error) {
+		  console.log(error);
+		});
 	  	
 	  	
-	  firebase.auth().onAuthStateChanged(function(user){
-	  	if(user){
-	  		window.location = 'landing.html';
-	  	}
-	  });
+	  // firebase.auth().onAuthStateChanged(function(user){
+	  // 	if(user){
+	  // 		console.log('NAAAAAAAHHH!!!!!');
+	  // 		window.location = 'landing.html';
+	  // 	}
+	  // });
 	</script>
 </html>
