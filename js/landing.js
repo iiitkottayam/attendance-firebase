@@ -1,10 +1,4 @@
-var config = {
-    apiKey: "AIzaSyB6SkS7WTacu_BlwOLtfTwTUYSuKlvV1pI",
-    authDomain: "institute-attendance-app.firebaseapp.com",
-    projectId: "institute-attendance-app",
-  };
-firebase.initializeApp(config);		  
-firebase.auth().onAuthStateChanged(function(){			
+firebase.auth().onAuthStateChanged(function(){
 	var user = firebase.auth().currentUser;
 		if(!user){
 			window.location = 'index.html';
@@ -12,13 +6,13 @@ firebase.auth().onAuthStateChanged(function(){
 			displayProfile();
 			var db = firebase.firestore();
 		var settings = {timestampsInSnapshots: true};
-		db.settings(settings);		
+		db.settings(settings);
 		var userInfo = db.collection("users").doc(user.uid);
 		  userInfo.get().then(function(doc){
 		  if(doc.exists){
 			var id = doc.data().index;
 			var typeId = doc.data().type;
-			var type = (typeId == 3)?'Student':((typeId == 2)?'Faculty':'Invalid');					
+			var type = (typeId == 3)?'Student':((typeId == 2)?'Faculty':'Invalid');
 			if (typeId == 3 || typeId == 2){
 				var collectionName = (typeId==2)?'faculties':'students';
 				var userCourses = db.collection(collectionName).doc(id);
@@ -43,6 +37,23 @@ firebase.auth().onAuthStateChanged(function(){
   		});
 		}
 });
+
+function displayPercentage(course){ //on landing page
+	firebase.auth().onAuthStateChanged(function(){			
+		var user = firebase.auth().currentUser;
+		if(!user){
+			window.location = 'index.html';
+		}else{
+			var uid = firebase.auth().currentUser.uid;
+			var db = firebase.firestore();
+			db.collection('users').doc(uid).get().then(function(doc){
+				var index = doc.data().index;
+				document.getElementById('studPer').innerHTML='<div>'+course+'<br><i><span id='+index+'></span></i></div><br>';
+				calcPresentFrac(index,course);
+			})
+		}
+	})	
+}
 
 function linkViewAttendance(ele){
   	var courseId = ele.getAttribute('courseid');
