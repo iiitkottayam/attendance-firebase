@@ -21,7 +21,7 @@ function calcPresentFrac(studid,courseid){
 	var totalSessions=0;
 	var presentDays = 0;
 	var dayDatas=[];
-	var fetchedDocs=[];
+	var fetchedDocs=[]; //holds promises
 	var year = dt.getFullYear().toString();
 	var db = firebase.firestore();
 	db.collection('attendance').doc(year).collection(courseid).get()
@@ -116,5 +116,63 @@ function logout(){
 	.catch(function(error){
 		notify('Something went wrong','error');
 		//console.log(error);
+	});
+}
+
+function deleteSession(year,course,date,sessionNum) {
+	let promises = [];
+
+	var db = firebase.firestore();
+	let docCheckPromise = db.collection('courses').doc(course).get()
+	.then((doc)=>{
+		if(doc.exists) {
+
+			let dateDocRef = db.collection('attendance').doc(year)
+			.collection(course).doc(date);
+
+			//deleteing field from document
+			let deleteDocPromise = dateDocRef.update({["session."+sessionNum] : firebase.firestore.FieldValue.delete()})
+			.then(()=>{
+				console.log('deleted from doc.');
+			})
+			.catch((error)=>{
+				console.log(error);
+			});
+
+			promises.push(deleteDocPromise);
+
+			//deleting session collection by individually deleting all docs inside it
+			let enrolled = doc.data().enrolled;
+			for(rollno of enrolled) {
+				let deleteRollNoDocPromise = dateDocRef.collection('session'+sessionNum)
+				.doc(rollno).delete()
+				.then(()=>{
+					console.log('Deleted successfully');
+				})
+				.catch((error)=>{
+					console.log(error);
+				});
+				promises.push(deleteRollNoDocPromise);
+			}
+		}
+		else {
+			console.log('No such document');
+		}
+	})
+	.catch((error)=>{
+		console.log(error);
+	});
+
+	// promises.push(docCheckPromise);
+
+
+	return Promise.all([docCheckPromise]).then(function(val) {
+		// console.log('gsagsa');
+		// console.log(promises);
+		return promises;
+	})
+	.catch((error)=>{
+		console.log(error);
+		return error;
 	});
 }

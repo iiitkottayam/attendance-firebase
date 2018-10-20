@@ -24,6 +24,11 @@ firebase.auth().onAuthStateChanged(function(){
 });
 
 function getAttendanceTableForNewSession(newSessionNo){
+	//make delete button visible
+	let deleteBtn = document.getElementById('deleteThisSsnBtn');
+	deleteBtn.innerHTML = '<button class="btn btn-danger animated fadeIn" onclick=deleteThisSession()>Delete this session</button>';
+
+	//fetch table data
 	var tableData = '';
 	var enrolled;
 	var db= firebase.firestore();
@@ -143,6 +148,8 @@ function updateAttendanceWithSwitch(year,courseid,docid,sessid,studentid)
 	});
 }
 
+let SESSION_CURRENT = 1; //a global var for other functions //a PATIYA which needs to be fixed :P
+
 function addNewSessionToday(facultyIndex){
 	var db = firebase.firestore();
 	notifyWait('Creating new session','info');
@@ -165,6 +172,7 @@ function addNewSessionToday(facultyIndex){
 			db.collection('attendance').doc('2018').collection(courseid).doc(tdate).get()
 			.then((doc)=>{
 				newSessionNo = Object.keys(doc.data().session).length + 1;
+				SESSION_CURRENT = newSessionNo;
 				document.getElementById('todayDate').innerHTML = '<span class="animated fadeIn">'+'Date : '+day+'/'+month+'/'+year+'</span>';
 				document.getElementById('currentCourse').innerHTML = '<span class="animated fadeIn">'+'Course : '+courseid+'</span>';
 				document.getElementById('currentSession').innerHTML = '<span class="animated fadeIn">'+'Session : '+newSessionNo+'</span>';
@@ -243,4 +251,33 @@ function addNewSessionToday(facultyIndex){
 			});
 		}
 	});
+}
+
+function deleteThisSession() {
+	notifyWait('Deleting this session....','info');
+	var dt = new Date();
+	var day = dt.getDate().toString();
+	var month = (dt.getMonth()+1).toString();
+	var year = dt.getFullYear().toString();
+	if(day.length != 2){
+	day = "0"+day;
+	}
+	if(month.length != 2){
+		month="0"+month;
+	}
+	var tdate = day+month+year;
+	var courseid = get('courseid');
+
+	deleteSession(year,courseid,tdate,SESSION_CURRENT)
+	.then((value)=>{ //this value holds all promises
+		Promise.all(value)
+		.then(()=>{
+			notify('Deleted successfully.','info');
+			history.back();
+		})
+		.catch((error)=>{
+			console.log(error);
+		});
+	});
+	// console.log(promises);
 }
