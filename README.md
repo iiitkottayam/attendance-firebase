@@ -23,11 +23,9 @@ Visit the project page [here](http://iiitkottayam.gitlab.io/attendance/).
 	- View one's Attendance Record
 	- View Percentage Details of Attendance
 
-## Credentials for Demonstration
+## Credentials
 
-- To see faculty view use *govindan@iiitkottayam.ac.in*.
-- To see student's view use *janedoe@iiitkottayam.ac.*.
-- Use password *123456* for both IDs.
+- Cannot be revealed :(
 
 ## Demonstration
 
