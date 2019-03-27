@@ -25,7 +25,7 @@ Visit the project page [here](http://iiitkottayam.gitlab.io/attendance/).
 
 ## Credentials
 
-- Cannot be revealed :(
+- Cannot be revealed ( test accounts are disabled for now )
 
 ## Demonstration
 
